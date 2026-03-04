@@ -1,34 +1,30 @@
 """
-Exercise 1.2 - Adding Constructor Parameters
+Exercise 2.1 - Implementing Methods
 
- -- Use vehicles2.py from class as an example to help complete this. --
-
-Goal: Extend the class you created in the previous exercise (1.1) by adding parameters to the constructor (__init__)
-      so attributes are set when the object is created. Then manipulate the objects you create with the class.
-
-      This mirrors the example:
-            def __init__(self, make, model, color, price, sold=False):
+Goal: Implement at least one method in the class you previously designed in the previous exercises.
 
 STEP-BY-STEP:
-    STEP 1 — Modify Your Existing Class
-        Take the class you created in the previous lesson and rewrite its __init__ method so it accepts parameters.
-        At least ONE of your parameters should have a DEFAULT/KEYWORD VALUE.
-            for example -  we used 'sold = False' as a DEFAULT VALUE
+    STEP 1 — Choose AT LEAST TWO Methods You Wrote Earlier and Implement It (you can do more)
+        Your method MUST:
+            Receive at least one parameter
+            Modify at least one attribute
+            return a message or result
 
+            For example:
+                If your class was a GameCharacter a simple method could:
+                    def take_damage(self, amount):
+                        self.health -= amount
+                        return f"{self.name} now has {self.health} HP."
 
-    STEP 2 — Create one Object Using Your New Constructor
-        Create at least one object of your class using the new parameters. in the main body of your code.
+    STEP 2 — Create an instance of the object and Call Your Methods separately
 
-    STEP 3 — Print the Object’s Attributes in a dictionary
+    STEP 3 — Test Your Methods Thoroughly
+        Write at least three test cases - for example:
 
-    STEP 4 - Create a loop that allows users to generate more objects using a for loop and store to a list
-        You can do this using user input like we did in the example program or assigning them static values during the loop
-
-    STEP 5- Write a conditional to check an attribute value of your choice from an object in the list
-            You can do this through user input or by choosing an arbitrary element
-
-                In our example, we used the first element and checked its sold attribute using:
-                    if cars_dict[0]['sold']
+            obj = MyClass("A", "B", "C", 10)
+            print(obj.take_damage(5))
+            print(obj.take_damage(10))
+            print(obj.take_damage(3))
 """
 import faker
 import random
@@ -46,19 +42,22 @@ class Entity:
         self.inventory = inventory
 
     def update_pos(self, new_pos):
-        # self.position = new_pos
-        pass
+        prev_pos = self.position
+        self.position = new_pos
+        return f"You move from {prev_pos} to {new_pos}. New Position: {self.position}"
 
     def deal_dmg(self, target):
-        # target.take_dmg(self.attack)
-        pass
+        target.take_dmg(self.attack)
+        print(f"{self.name} deal {self.attack} to {target.name}")
 
     def take_dmg(self, dmg):
-        # self.hp = self.hp - max(dmg - self.defense, 0)
-        pass
+        self.hp = self.hp - max(dmg - self.defense, 0)
+        print(f"{self.name} has {self.hp} HP left.")
+        return self.hp
+
     def update_inventory(self, item):
-        # self.inventory.append(item)
-        pass
+        self.inventory.append(item)
+        return self.inventory
 
 if __name__ == '__main__':
     faker = faker.Faker("en_US")
@@ -82,3 +81,10 @@ if __name__ == '__main__':
     for entity in entities_dict:
         if entity['hp'] < 30:
             print(f"{entity['name']} low HP")
+
+    entities[0].deal_dmg(character)
+    entities[0].deal_dmg(entities[1])
+    entities[1].deal_dmg(character)
+    print(character.update_pos((0, 5)))
+    print(character.update_pos((4, 5)))
+    print(character.update_pos((-2, 10)))
