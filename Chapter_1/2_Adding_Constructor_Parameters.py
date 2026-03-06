@@ -1,30 +1,33 @@
 """
-Exercise 2.1 - Implementing Methods
+2.2 - Hidden Attributes and Getters/Setters
 
-Goal: Implement at least one method in the class you previously designed in the previous exercises.
+Goal: You will modify your existing class from previous lessons.
 
 STEP-BY-STEP:
-    STEP 1 — Choose AT LEAST TWO Methods You Wrote Earlier and Implement It (you can do more)
-        Your method MUST:
-            Receive at least one parameter
-            Modify at least one attribute
-            return a message or result
-
+    STEP 1 — Add a Protected Attribute
+        Choose one attribute that the object should not be changed directly by outside code (but can still be read if needed).
+        Add it using one underscore:
             For example:
-                If your class was a GameCharacter a simple method could:
-                    def take_damage(self, amount):
-                        self.health -= amount
-                        return f"{self.name} now has {self.health} HP."
+                self._protected_value = 10
 
-    STEP 2 — Create an instance of the object and Call Your Methods separately
+    STEP 2 - Add a Private Attribute
+        Choose another attribute that should be fully hidden from users, because it affects internal logic.
+            Add it using two underscores:
+            For example:
+                self.__private_value = 100
 
-    STEP 3 — Test Your Methods Thoroughly
-        Write at least three test cases - for example:
+    STEP 3 - Write a Getter Method (for one of your protected or private methods)
 
-            obj = MyClass("A", "B", "C", 10)
-            print(obj.take_damage(5))
-            print(obj.take_damage(10))
-            print(obj.take_damage(3))
+    STEP 4 - Write a Setter Method and include a validation check before the return (for one of your protected or private methods)
+
+    STEP 5 — Demonstrate Your Getter and Setter Methods
+
+        After you finish the class:
+        - Create an object
+        - Try printing the protected attribute
+        - Use your getter to read the private attribute
+        - Use your setter to change the private attribute
+        - Print the private value again to confirm it changed
 """
 import faker
 import random
@@ -40,6 +43,18 @@ class Entity:
         self.defense = defense
         self.active = active
         self.inventory = inventory
+
+        self.__stamina = 0
+        self._strength = 0
+
+    def get_stamina(self):
+        return self.__stamina
+
+    def set_stamina(self, stamina):
+        if stamina >= 0:
+            self.__stamina = stamina
+        else:
+            print("You can't set negative value")
 
     def update_pos(self, new_pos):
         prev_pos = self.position
@@ -78,13 +93,18 @@ if __name__ == '__main__':
     entities_dict = [i.__dict__ for i in entities]
     print(entities_dict)
 
-    for entity in entities_dict:
-        if entity['hp'] < 30:
-            print(f"{entity['name']} low HP")
+    # for entity in entities_dict:
+    #     if entity['hp'] < 30:
+    #         print(f"{entity['name']} low HP")
+    #
+    # entities[0].deal_dmg(character)
+    # entities[0].deal_dmg(entities[1])
+    # entities[1].deal_dmg(character)
+    # print(character.update_pos((0, 5)))
+    # print(character.update_pos((4, 5)))
+    # print(character.update_pos((-2, 10)))
 
-    entities[0].deal_dmg(character)
-    entities[0].deal_dmg(entities[1])
-    entities[1].deal_dmg(character)
-    print(character.update_pos((0, 5)))
-    print(character.update_pos((4, 5)))
-    print(character.update_pos((-2, 10)))
+    print(f"Protected: {entities[0]._strength}")
+    print(f"Getter: {entities[0].get_stamina()}")
+    entities[0].set_stamina(100)
+    print(f"Getter: {entities[0].get_stamina()}")
