@@ -20,7 +20,6 @@ STEP-BY_STEP:
 
     STEP 4: Demonstrate your implementation by creating an instance from the child class and calling the method
 """
-
 from Exercises.Chapter_1.GameObject import GameObject
 
 
@@ -32,10 +31,18 @@ class Player(GameObject):
     def get_inventory(self):
         return list(self.__inventory)
 
+    def update_pos(self, new_pos):
+        msg = super().update_pos(new_pos)
+        cost = 5
+        self.set_stamina(max(0, self.get_stamina() - cost))
+        return f"{msg} \nTravel cost: {cost} stamina. Now player stamina is {self.get_stamina()}."
+
     def __str__(self):
         return f"{self.name}: {self._class_type} at Position {self.get_position()}"
 
 if __name__ == "__main__":
     player1 = Player("Harry", "Mage", dict())
     print(player1)
-    print(player1.get_inventory())
+    player1.set_stamina(20)
+    print(player1.update_pos((3, 4)))
+    print(player1)

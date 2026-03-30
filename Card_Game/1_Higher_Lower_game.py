@@ -103,13 +103,7 @@ class Deck:
             for suit in Deck.SUIT_TUPLE:
                 self.starting_deck_list.append(Card(rank, suit, value))
 
-        self.playing_deck_list = self.starting_deck_list  # The playingDeckList is the active deck used during gameplay, which can be shuffled and modified.
-
-
-    # Generate the deck by calling the card object for each rank and value in the class variable list
-    pass
-
-    pass # call a method to separate playing deck from starting decks and shuffle the generated deck
+        self.playing_deck_list = self.starting_deck_list.copy()  # The playingDeckList is the active deck used during gameplay, which can be shuffled and modified.
 
     def shuffle(self):
         # This method shuffles the deck and ensures all cards are concealed before shuffling.
@@ -164,10 +158,13 @@ class Game:
         while not is_correct:
             try:
                 bet = int(input("Enter the bet amount: "))
-                is_correct = bet > 0
 
-                if not is_correct:
+                if bet <= 0:
                     print("Pls enter the positive integer amount.")
+                elif bet > self.credits:
+                    print("Pls enter the valid integer amount.")
+                else:
+                    is_correct = True
             except ValueError:
                 print("This is incorrect, pls try again.")
 
@@ -192,7 +189,6 @@ class Game:
 
 
             bet = self.get_bet() # Place bet
-            self.credits -= bet
 
             correct_input = False
             cmd = ""
@@ -209,16 +205,17 @@ class Game:
             if cmd == "h" and self.current_card.get_value() < next_card.get_value():
                 next_card.reveal()
                 print(f"You are correct. The next card is: {next_card}")
-                self.credits += bet * 2
+                self.credits += bet
 
             elif cmd == "l" and self.current_card.get_value() > next_card.get_value():
                 next_card.reveal()
                 print(f"You are correct. The next card is: {next_card}")
-                self.credits += bet * 2
+                self.credits += bet
 
             else:
                 next_card.reveal()
                 print(f"You are incorrect. Bad luck ever. The next card is: {next_card}")
+                self.credits -= bet
 
             print(f"Your credits now is: {self.credits}")
 
