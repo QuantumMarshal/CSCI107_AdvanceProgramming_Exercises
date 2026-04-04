@@ -48,8 +48,6 @@ Note:
 
 import random
 
-from pygame.examples.music_drop_fade import play_file
-
 
 class Card:
     """
@@ -133,6 +131,27 @@ class Deck:
     def count_card(self):
         return len(self.playing_deck_list)
 
+    """
+    Counts remaining cards higher or lower the value.
+    Tie --> Lose (If you have King and the next one is King --> You lose)
+    This uses for calculate probability later.
+    """
+
+    def count_higher_lower(self, value):
+        higher = 0
+        lower = 0
+
+        for card in self.playing_deck_list:
+            card_value = card.get_value()
+
+            if card_value > value:
+                higher += 1
+
+            elif card_value < value:
+                lower += 1
+
+        return higher, lower
+
 
 class Game:
     def __init__(self):
@@ -155,6 +174,11 @@ class Game:
         is_correct = False
         bet = ""
 
+        """
+        Have you ever try Ctrl + D for input? This causes EOF error.
+        I am trying to figure it.
+        """
+
         while not is_correct:
             try:
                 bet = int(input("Enter the bet amount: "))
@@ -170,6 +194,73 @@ class Game:
 
         return bet
 
+    """
+    Show the probability to the terminal.
+    """
+
+    def show_prob(self):
+        card_value = self.current_card.get_value()
+        higher, lower = self.deck.count_higher_lower(card_value)
+        total = self.deck.count_card()
+
+        if total == 0:
+            return
+
+        print(f"Higher wins: {higher}/{total} ({100 * higher / total:.1f}%) | Lower wins: {lower}/{total} ({100 * lower / total:.1f}%)\n")
+
+    def calc_prob_by_choice(self, cmd):
+        card_value = self.current_card.get_value()
+        higher, lower = self.deck.count_higher_lower(card_value)
+        total = self.deck.count_card()
+
+        if cmd == "h":
+            return higher / total
+
+        return lower / total
+
+    def calc_bet(self, bet, win_prob):
+        # Case 0% win but still choose: --> Lose all the bet credits
+        if win_prob <= 0:
+            return 1000000000, bet
+
+        """
+        Take 50% as a fair situation. 
+        --> Less than 50% increase the bet
+        --> More than 50% decrease the bet
+        
+        I use simple linear equation: 
+            + win = bet * (50% / win_probability)
+            + lose = bet / (50% / win_probability) = bet * (win_probability / 50%)
+        
+        Based on this equation we can see that highest multiplier can be 25%
+        
+        [Warning: I do math here you can skip it or double check for me :)]
+            + Win situation:
+                Worst case: Queen and choose higher and only have 1 King left 
+                    Card left: 51-3 (3 Kings) = 48 --> Prob = 1/48 = 2%
+                    --> 50/2 = 25 --> Max Mul is 25 --> too high --> Reduced it to 5 by default.
+            
+            + Lose situation:
+                Worst case: King and choose lower and only have 1 King left:
+                    Card left: 51 - 2 (2 Kings) = 49 --> Prob = 48/49 = 98%
+                    --> 98/50 = 1.96 --> You have many chance to win but still lose
+                    --> Lose bet * 1.96 (more than you bet) (I like this one)
+                    --> Lose your bet (your actual bet) 
+        """
+
+        win = bet * (0.5 / win_prob)
+        max_win = bet * 5
+
+        win = int(min(round(win), max_win))
+
+        loss = bet * (win_prob / 0.5)
+        min_loss = max(bet / 5, 1)
+
+        # I have 2 version of calculating lose
+        # loss = int(max(bet * 0.5, round(bet * (win_prob / Game.NEUTRAL_WIN_PROB))))
+        loss = int(min(bet, max(min_loss, round(loss))))
+
+        return win, loss
 
     def start_game(self):
         """
@@ -187,8 +278,9 @@ class Game:
             if self.credits <= 0: # Check if there is any credits left
                 break
 
+            self.show_prob()
 
-            bet = self.get_bet() # Place bet
+            bet = self.get_bet()
 
             correct_input = False
             cmd = ""
@@ -199,23 +291,23 @@ class Game:
                 else:
                     print("Pls enter the correct input (h/l).")
 
+            win_prob = self.calc_prob_by_choice(cmd)
+            win, loss = self.calc_bet(bet, win_prob)
+
+            print(f"Betting system: Win +{win} credits | Lose -{loss} credits\n")
+
             # Check if correct guess and adjust winnings (credit amount)
             next_card = self.deck.get_card()
 
-            if cmd == "h" and self.current_card.get_value() < next_card.get_value():
+            if (cmd == "h" and self.current_card.get_value() < next_card.get_value()) or (cmd == "l" and self.current_card.get_value() > next_card.get_value()):
                 next_card.reveal()
                 print(f"You are correct. The next card is: {next_card}")
-                self.credits += bet
-
-            elif cmd == "l" and self.current_card.get_value() > next_card.get_value():
-                next_card.reveal()
-                print(f"You are correct. The next card is: {next_card}")
-                self.credits += bet
+                self.credits += win
 
             else:
                 next_card.reveal()
-                print(f"You are incorrect. Bad luck ever. The next card is: {next_card}")
-                self.credits -= bet
+                print(f"You are incorrect. Worst luck ever. The next card is: {next_card}")
+                self.credits -= loss
 
             print(f"Your credits now is: {self.credits}")
 
